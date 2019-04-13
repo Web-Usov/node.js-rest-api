@@ -1,0 +1,30 @@
+{
+  "name": "node.js-rest.api",
+  "version": "0.0.1-dev",
+  "description": "kit start node.js server ",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon ./src/server.js",
+    "start":  "node ./src/server.js"
+  },
+  "keywords": [
+    "node.js",
+    "server",
+    "kit",
+    "start",
+    "express",
+    "mongodb"
+  ],
+  "author": "WebUsov",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^3.0.5",
+    "body-parser": "^1.18.3",
+    "dotenv": "^7.0.0",
+    "express": "^4.16.4",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.4.13",
+    "morgan": "^1.9.1"
+  }
+}
