@@ -4,7 +4,8 @@ const bodyParser = require('body-parser')
 const app = express()
 
 const routes = require('./routes')
-const {error} = require('./middleware')
+const {pageNotFound, sendError} = require('./middleware')
+const {SendResponse} = require('./models')
 
 app.use(morgan('dev'))
 app.use(bodyParser.urlencoded({extended:false}))
@@ -19,7 +20,7 @@ app.use((req,res, next) => {
     )
     if(req.method === "OPTIONS"){
         res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE')
-        return res.status(200).json({})
+        return next(200,"Popka",{})
     }
     next()
 })
@@ -30,16 +31,15 @@ app.use('/room',routes.roomsRouters)
 app.use('/user',routes.userRouters)
 
 app.get('/', (req,res,next) => {
-    res.status(200).json({
-        response:{
-            project:"REST-full API on Node.js",
-            version:"0.0.1",
-            author:"Web Usov"
-        }
-    })
+    res.status(200).json(new SendResponse(req, "Api info", {
+        project:"REST-full API on Node.js",
+        version:"0.0.1",
+        author:"Web Usov"
+    }))  
 })
+
 // Errors
-app.use(error.throwError)
-app.use(error.sendError)
+app.use(pageNotFound)
+app.use(sendError)
 
 module.exports = app

@@ -1,67 +1,64 @@
-const {User} = require('../models')
+const { User,SendResponse } = require('../models')
+const {response} = require('express')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
-exports.signup = (req,res,next) => {    
-    const {user} = req.body.data    
-    User.findOne({
-        email:user.email
-    })
-    .exec()
-    .then(findUser => {
-        if(findUser) return next({
-            message:"User with this email is already registered",
-            code:409
-        })
-        bcrypt.hash(user.password, 10, (err, hash) => {
-            if (err) return next(err)
+exports.signup = async (req, res = response, next) => {
+    try {
+        const { user } = req.body.data
+        const findUser = await User.findOne({
+            email: user.email
+        }).exec()
+
+        if (findUser) return next({code:409,message:"User with this email is already registered" })
+        bcrypt.hash(user.password, 10, async (e, hash) => {
+            if (e) return next({code:400, message:e.message, data: e})
             user.password = hash
-            User.create({
-                email:user.email,
+            await User.create({
+                email: user.email,
                 password: user.password
             })
-            .then(user => {
-                res.status(200).json({
-                    message:"User singup!"
-                })
-            })
-            .catch(err => next(err))    
-        }) 
-    })
-    .catch(err => next(err)) 
+            res.status(200).json(new SendResponse(req, "User singup!", {}))
+        })
+    } catch (e) {
+        next({
+            code:400,
+            message:"userController.signup:"+e.message,
+            data:e
+        })
+    }
+
 }
 
-exports.login = (req,res,next) => {    
-    const {user} = req.body.data
-    User.findOne({
-        email:user.email
-    })
-    .exec()
-    .then(findUser => {
-        if(!findUser) return next({
-            message:"User not found",
-            code:404
-        })
-        bcrypt.compare(user.password,findUser.password, (err,result) => {
-            if (err) return next(err)  
+exports.login = (req, res = response, next) => {
+    try {
+        const { user } = req.body.data
+        const findUser = User.findOne({
+            email: user.email
+        }).exec()
+
+        if (!findUser) return next({code:404,message:"User not found" })
+        bcrypt.compare(user.password, findUser.password, (e, result) => {
+            if (e) return next({code:400, message:e.message, data: e})
             if (result) {
                 const token = jwt.sign({
-                    userId:findUser._id,
-                    email:findUser.email
-                },process.env.JWT_KEY, {
-                    expiresIn:"1h"
-                })
+                    userId: findUser._id,
+                    email: findUser.email
+                }, process.env.JWT_KEY, {
+                        expiresIn: "1d" // Время действия токена
+                    })
 
-                res.status(200).json({
-                    message:"Auth seccessful",
-                    token
-                })  
+                    res.status(200).json(new SendResponse(req, "Auth seccessful", token))
             }
-            else next({
-                message:"You entered an incorrect password",
-                code:401
-            })
+            else next({code:401,message:"You entered an incorrect password"}) 
         })
-    })
-    .catch(err => next(err)) 
+    } catch (e) {        
+        next({
+            code:400,
+            message:"userController.login:"+e.message,
+            data:e
+        })
+    }
+    
+
 }

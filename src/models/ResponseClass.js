@@ -7,9 +7,12 @@ class SendResponse {
                 ...req.query
             }
         }
+        
         this.response = {
-            message: message || "Simple response",
-            data: data || null
+            message: message || "Response",
+            data: {
+                ...data
+            }
         }
     }
 }

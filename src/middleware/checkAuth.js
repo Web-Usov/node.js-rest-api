@@ -7,9 +7,6 @@ module.exports = (req, res, next) => {
         req.userData = decoded
         next();
     }catch (error){
-        return next({
-            code:401,
-            message:"Auth failed =("
-        })
+        next(401,"Error",error)
     }
 }

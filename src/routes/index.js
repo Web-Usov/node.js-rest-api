@@ -1,4 +1,2 @@
-module.exports = {
-    roomsRouters:require('./roomRouters'),
-    userRouters:require('./userRouters')
-}
+exports.roomsRouters=require('./roomRouters')
+exports.userRouters=require('./userRouters')

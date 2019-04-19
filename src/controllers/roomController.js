@@ -1,70 +1,88 @@
-const {Room, SendResponse} = require('../models')
+const { Room,SendResponse } = require('../models')
+const {response} = require('express')
 
-exports.getRoom = (req, res, next) => {
-    const {query} = req
-    Room.find(query)
-        .exec()
-        .then(rooms => {
-            if(rooms.length <= 0) return next({
-                message:"Room not found",
-                code:404,
-            })
-            
-            res.status(200).json(new SendResponse(req,"Array with rooms", rooms))
+exports.getRoom = async (req, res = response, next) => {
+    
+    try {
+        const { query } = req
+        const mdbRooms = await Room.find(query).exec()
+        if (mdbRooms.length <= 0) return next({code:404,message:"Rooms not Found",data:mdbRoom})
+        res.status(200).json(new SendResponse(req,"Get room", mdbRooms))
+
+    } catch (e) {
+        next({
+            code:400,
+            message:"roomController.getRoomById:"+e.message,
+            data:e
         })
-        .catch(err => next(err))
+    }
 }
 
-exports.getRoomById = (req, res, next) => {
-    const {id} = req.params
-    Room.findById(id)
-        .exec()
-        .then(room => {
-            if(!room) return next({
-                message:"Room not found",
-                code:404,
-            })
-            
-            res.status(200).json(new SendResponse(req,"Room (by id)", rooms))
+exports.getRoomById = async (req, res = response, next) => {
+    try {
+        const { id } = req.params
+        const mdbRoom = await Room.findById(id).exec()
+        if (!mdbRoom) return  next({code:404,message:"Room not Found",data:mdbRoom})
+        res.status(200).json(new SendResponse(req,"Get room by id", mdbRoom))
+
+    } catch (e) {
+        next({
+            code:400,
+            message:"roomController.getRoomById:"+e.message,
+            data:e
         })
-        .catch(err => next(err))
+    }
+
 }
 
-exports.addRoom = (req, res, next) => {
-    const {room} = req.body.data
-    Room.create(room)
-    .then(room => {        
-        res.status(201).json(new SendResponse(req,"Successful addition", room))
-    })
-    .catch(err => next(err))
+exports.addRoom = async (req, res = response, next) => {
+    try {
+        const { room } = req.body.data
+        const mdbRoom = await Room.create({
+            naem: room.name,
+            people: room.people
+        })
+        res.status(201).json(new SendResponse(req,"Successful addition", mdbRoom))
+
+    } catch (e) {
+        next({
+            code:400,
+            message:"roomController.addRoom:"+e.message,
+            data:e
+        })
+    }
+
 }
 
-exports.updateRoom = (req, res, next) => {
-    const {id} = req.params
-    const {data} = req.body
-    Room.findByIdAndUpdate(id, { $set : data.room})
-    .then(room => {
-        if(!room) return next({
-            message:"Room not found",
-            code:404,
+exports.updateRoom = async (req, res = response, next) => {
+    try {
+        const { id } = req.params
+        const { data } = req.body
+        const mdbRoom = await Room.findByIdAndUpdate(id, { $set: data.room })
+        if (!mdbRoom) return  next({code:404,message:"Room not Found",data:mdbRoom})
+        res.status(201).json(new SendResponse(req,"Update successful", mdbRoom))
+
+    } catch (e) {
+        next({
+            code:400,
+            message:"roomController.updateRoom:"+e.message,
+            data:e
         })
-        
-        res.status(201).json(new SendResponse(req,"Update successful", room))
-    })
-    .catch(err => next(err))
+    }
+
 }
 
-exports.deleteRoom = (req, res, next) => {
-    const {id} = req.params    
-    Room.findByIdAndDelete(id)
-        .exec()
-        .then(doc => {            
-            if(!doc) return next({
-                message:"Room not found",
-                code:404,
-            })
-        
-            res.status(200).json(new SendResponse(req,"Deletion successful", room))
+exports.deleteRoom = async (req, res = response, next) => {
+    try {
+        const { id } = req.params
+        const mdbRoom = await Room.findByIdAndDelete(id)
+        if (!mdbRoom) return next({code:404,message:"Room not Found",data:mdbRoom})
+        res.status(200).json(new SendResponse(req,"Deletion successful", mdbRoom))
+    } catch (e) {
+        next({
+            code:400,
+            message:"roomController.deleteRoom:"+e.message,
+            data:e
         })
-        .catch(err => next(err))
+    }
 }

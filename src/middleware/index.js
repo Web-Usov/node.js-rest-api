@@ -1,2 +1,3 @@
 exports.checkAuth = require('./checkAuth')
-exports.error = require('./error')
+exports.pageNotFound = require('./pageNotFound')
+exports.sendError = require('./sendError')

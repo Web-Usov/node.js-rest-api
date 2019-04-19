@@ -8,16 +8,16 @@ const {roomController} = require('../controllers')
 router.get('/', roomController.getRoom )
 
 // Get for one room by name(id)
-router.get('/:name',checkAuth,roomController.getRoomById )
+router.get('/:id',checkAuth,roomController.getRoomById )
 
 // Add room
 router.post('/', checkAuth, roomController.addRoom)
 
 // Update room data
-router.patch('/:name', checkAuth,roomController.updateRoom )
+router.patch('/:id', checkAuth,roomController.updateRoom )
 
 // Delete one room
-router.delete('/:name', checkAuth, roomController.deleteRoom)
+router.delete('/:id', checkAuth, roomController.deleteRoom)
 
 
 module.exports = router
