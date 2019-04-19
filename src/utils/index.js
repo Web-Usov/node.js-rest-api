@@ -1,1 +1,1 @@
-exports.isCorrectReq = require('./isCorrectReq')
+exports.toCorrectProps = require('./toCorrectProps')

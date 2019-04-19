@@ -10,9 +10,7 @@ class SendResponse {
         
         this.response = {
             message: message || "Response",
-            data: {
-                ...data
-            }
+            data:data || {}
         }
     }
 }

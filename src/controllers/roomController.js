@@ -1,11 +1,14 @@
 const { Room,SendResponse } = require('../models')
-const {response} = require('express')
+const {response, request} = require('express')
+const {toCorrectProps} = require('../utils')
 
 exports.getRoom = async (req, res = response, next) => {
     
     try {
-        const { query } = req
-        const mdbRooms = await Room.find(query).exec()
+        const props = toCorrectProps(req.query, [], ["filter"])
+        const mdbRooms = await Room.find({
+            ...props.filter
+        }).exec()
         if (mdbRooms.length <= 0) return next({code:404,message:"Rooms not Found",data:mdbRoom})
         res.status(200).json(new SendResponse(req,"Get room", mdbRooms))
 
@@ -18,10 +21,12 @@ exports.getRoom = async (req, res = response, next) => {
     }
 }
 
-exports.getRoomById = async (req, res = response, next) => {
+exports.getRoomById = async (req = request, res = response, next) => {
     try {
-        const { id } = req.params
-        const mdbRoom = await Room.findById(id).exec()
+        console.log("userData",req.userData);
+        
+        const props = toCorrectProps(req.params, ["id"])
+        const mdbRoom = await Room.findById(props.id).exec()
         if (!mdbRoom) return  next({code:404,message:"Room not Found",data:mdbRoom})
         res.status(200).json(new SendResponse(req,"Get room by id", mdbRoom))
 
@@ -37,10 +42,11 @@ exports.getRoomById = async (req, res = response, next) => {
 
 exports.addRoom = async (req, res = response, next) => {
     try {
-        const { room } = req.body.data
+        const props = toCorrectProps(req.body, ["name","people"], ["withKitten"])
         const mdbRoom = await Room.create({
-            naem: room.name,
-            people: room.people
+            name: props.name,
+            people: props.people,
+            withKitten:props.withKitten
         })
         res.status(201).json(new SendResponse(req,"Successful addition", mdbRoom))
 
@@ -56,9 +62,12 @@ exports.addRoom = async (req, res = response, next) => {
 
 exports.updateRoom = async (req, res = response, next) => {
     try {
-        const { id } = req.params
-        const { data } = req.body
-        const mdbRoom = await Room.findByIdAndUpdate(id, { $set: data.room })
+        const props = toCorrectProps([...req.params,...req.body], ["id"], ["name","people","withKitten"])
+        const mdbRoom = await Room.findByIdAndUpdate(props.id, { $set: {
+            name:props.name,
+            people:props.people,
+            withKitten:props.withKitten
+        }})
         if (!mdbRoom) return  next({code:404,message:"Room not Found",data:mdbRoom})
         res.status(201).json(new SendResponse(req,"Update successful", mdbRoom))
 
@@ -74,8 +83,8 @@ exports.updateRoom = async (req, res = response, next) => {
 
 exports.deleteRoom = async (req, res = response, next) => {
     try {
-        const { id } = req.params
-        const mdbRoom = await Room.findByIdAndDelete(id)
+        const props = toCorrectProps(req.params, ["id"], ["name","people","withKitten"])
+        const mdbRoom = await Room.findByIdAndDelete(props.id)
         if (!mdbRoom) return next({code:404,message:"Room not Found",data:mdbRoom})
         res.status(200).json(new SendResponse(req,"Deletion successful", mdbRoom))
     } catch (e) {
