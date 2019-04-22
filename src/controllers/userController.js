@@ -1,5 +1,5 @@
 const { User,SendResponse } = require('../models')
-const {response} = require('express')
+const {response, request} = require('express')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const {toCorrectProps} = require('../utils')
@@ -36,7 +36,7 @@ exports.login = async (req, res = response, next) => {
         const props = toCorrectProps(req.body, ["email","password"])
         const findUser = await User.findOne({
             email: props.email
-        }).exec()
+        }).select('+password').exec()
 
         if (!findUser) return next({code:404,message:"User not found" })
         bcrypt.compare(props.password, findUser.password, (e, result) => {
@@ -61,4 +61,21 @@ exports.login = async (req, res = response, next) => {
     }
     
 
+}
+
+
+exports.getProfile = async (req = request,res = response,next) => {
+    try {
+        const props = toCorrectProps(req.query,[],["populate"])
+        const user = await User.findById(req.userData.id).populate(props.populate || "").exec()  
+        console.log("USER PROFILE", user, req.userData.id);
+        
+        res.status(200).json(new SendResponse(req,"User's profile",user))
+    } catch (e) {        
+        next({
+            code:400,
+            message:"userController.getProfile:"+e.message,
+            data:e
+        })
+    }
 }

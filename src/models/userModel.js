@@ -14,7 +14,12 @@ const schema = new Schema(
             required:true,
             min:4,
             max:16,
+            select:false
         },
+        createdRooms:[{
+            type:Schema.Types.ObjectId,
+            ref:'Room'
+        }]
     },
     {
         versionKey: false 
